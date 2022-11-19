@@ -11,6 +11,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
     networks:
       - stats-server
+      - services
 
   stats-db:
     image: postgres:14-alpine
@@ -37,6 +38,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
     networks:
       - ewm-service
+      - services
 
   ewm-db:
     image: postgres:14-alpine
@@ -56,4 +58,6 @@ networks:
   ewm-service:
     driver: bridge
   stats-server:
+    driver: bridge
+  services:
     driver: bridge
