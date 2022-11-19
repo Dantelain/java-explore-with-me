@@ -2,6 +2,7 @@ package ru.practicum.explore.with.me.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explore.with.me.dto.StatsHitDto;
 import ru.practicum.explore.with.me.dto.StatsMapper;
 import ru.practicum.explore.with.me.dto.StatsViewDto;
@@ -15,11 +16,13 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class StatsServiceImpl implements StatsService {
 
     private StatsRepo statsRepo;
 
     @Override
+    @Transactional
     public void addHit(StatsHitDto statsHitDto) {
         try {
             StatsHit statsHit = StatsMapper.toStatsHit(statsHitDto);

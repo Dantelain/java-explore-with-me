@@ -1,7 +1,10 @@
 package ru.practicum.explore.with.me.users.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.explore.with.me.exception.ConflictException;
 import ru.practicum.explore.with.me.exception.NotFoundException;
 import ru.practicum.explore.with.me.users.dto.UsersDto;
 import ru.practicum.explore.with.me.users.dto.UsersMapper;
@@ -13,17 +16,24 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private UserRepo userRepo;
 
     @Override
+    @Transactional
     public UsersDto add(UsersDto usersDto) {
-        User user = userRepo.save(UsersMapper.toUser(usersDto));
-        return UsersMapper.toUsersDto(user);
+        try {
+            User user = userRepo.save(UsersMapper.toUser(usersDto));
+            return UsersMapper.toUsersDto(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(e.getMessage());
+        }
     }
 
     @Override
+    @Transactional
     public UsersDto edit(UsersDto usersDto) {
         User user = userRepo.findById(usersDto.getId())
                 .orElseThrow(() -> new NotFoundException("Категория не найдена"));
@@ -33,11 +43,16 @@ public class UserServiceImpl implements UserService {
         if (usersDto.getEmail() != null && !usersDto.getEmail().isEmpty()) {
             user.setEmail(usersDto.getEmail());
         }
-        userRepo.save(user);
+        try {
+            userRepo.saveAndFlush(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(e.getMessage());
+        }
         return UsersMapper.toUsersDto(user);
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         userRepo.deleteById(id);
     }

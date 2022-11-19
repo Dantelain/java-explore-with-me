@@ -46,7 +46,6 @@ public class CompilationsMapper {
                         .build())
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
                 .build();
     }
 

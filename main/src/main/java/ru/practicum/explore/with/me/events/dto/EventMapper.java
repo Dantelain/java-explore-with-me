@@ -56,7 +56,6 @@ public class EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
-                .views(event.getViews())
                 .build();
     }
 
@@ -76,7 +75,6 @@ public class EventMapper {
                         .build())
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
                 .build();
     }
 }

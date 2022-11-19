@@ -46,8 +46,6 @@ public class Event {
     @Enumerated
     private State state; //Список состояний жизненного цикла события
     private String title;
-    @Builder.Default
-    private Long views = 0L;
 
     public void incrementConfirmedRequests() {
         confirmedRequests++;
@@ -55,10 +53,6 @@ public class Event {
 
     public void decrementConfirmedRequests() {
         confirmedRequests--;
-    }
-
-    public void incrementViews() {
-        views++;
     }
 
     @Override

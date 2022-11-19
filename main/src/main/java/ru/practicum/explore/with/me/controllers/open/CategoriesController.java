@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.explore.with.me.categories.dto.CategoriesDto;
 import ru.practicum.explore.with.me.categories.service.CategoriesService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,9 +24,6 @@ public class CategoriesController {
     @GetMapping
     public List<CategoriesDto> getAll(@RequestParam(required = false, defaultValue = "0") Integer from,
                                       @RequestParam(required = false, defaultValue = "10") Integer size) {
-        if (from == null || size == null) {
-            return new ArrayList<>();
-        }
         return categoriesService.getAll(from, size);
     }
 }

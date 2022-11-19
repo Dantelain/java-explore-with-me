@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explore.with.me.categories.model.Categories;
 import ru.practicum.explore.with.me.events.dto.*;
 import ru.practicum.explore.with.me.events.model.Event;
+import ru.practicum.explore.with.me.events.model.EventSort;
 import ru.practicum.explore.with.me.events.model.Location;
 import ru.practicum.explore.with.me.events.model.State;
 import ru.practicum.explore.with.me.events.repo.EventRepo;
@@ -35,8 +36,6 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getOne(Long eventId) {
         Event event = eventRepo.findByIdAndState(eventId, State.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено"));
-        event.incrementViews();
-        eventRepo.save(event);
         return EventMapper.toEventFullDto(event);
     }
 
@@ -97,12 +96,18 @@ public class EventServiceImpl implements EventService {
                                       Integer size) {
         int page = from / size;
         LocalDateTime currentDate = LocalDateTime.now();
+        EventSort eventSort;
+        try {
+            eventSort = EventSort.valueOf(sort);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Использован недопустимый вариант сортировки", sort);
+        }
         Sort mySort;
-        switch (sort) {
-            case "EVENT_DATE":
+        switch (eventSort) {
+            case EVENT_DATE:
                 mySort = Sort.by(Sort.Direction.ASC, "eventDate");
                 break;
-            case "VIEWS":
+            case VIEWS:
                 mySort = Sort.by(Sort.Direction.ASC, "views");
                 break;
             default:
@@ -129,8 +134,6 @@ public class EventServiceImpl implements EventService {
                                         criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + text.toLowerCase() + "%")
                                 )),
                 PageRequest.of(page, size, mySort));
-        events.forEach(Event::incrementViews);
-        eventRepo.saveAll(events);
         return events.stream()
                 .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());

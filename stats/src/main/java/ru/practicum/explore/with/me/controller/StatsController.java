@@ -7,7 +7,7 @@ import ru.practicum.explore.with.me.dto.StatsHitDto;
 import ru.practicum.explore.with.me.dto.StatsViewDto;
 import ru.practicum.explore.with.me.service.StatsService;
 
-import javax.servlet.http.HttpServletRequest;
+
 import javax.validation.Valid;
 import java.util.List;
 
@@ -27,13 +27,8 @@ public class StatsController {
     public List<StatsViewDto> getViewStats(
             @RequestParam String start,
             @RequestParam String end,
-            @RequestParam(required = false) List<String> uris, @RequestParam(required = false) Boolean unique) {
+            @RequestParam(required = false) List<String> uris, @RequestParam(required = false, defaultValue = "false") Boolean unique) {
         return statsService.getViewStats(start, end, uris, unique);
     }
 
-    @GetMapping()
-    public void test(HttpServletRequest request) {
-        log.info("client ip: {}", request.getRemoteAddr());
-        log.info("endpoint path: {}", request.getRequestURI());
-    }
 }
