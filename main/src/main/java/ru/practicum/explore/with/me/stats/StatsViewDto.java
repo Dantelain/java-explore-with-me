@@ -12,6 +12,7 @@ public class StatsViewDto {
 
     private String app;
     private String uri;
+    @Builder.Default
     private Long hits = 0L;
 
 }

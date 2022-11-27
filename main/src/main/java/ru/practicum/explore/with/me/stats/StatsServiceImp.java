@@ -116,7 +116,6 @@ public class StatsServiceImp implements StatsService {
                 .build();
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(statRequest, HttpResponse.BodyHandlers.ofString());
-        log.warn("response.body() - {}", response.body());
         return objectMapper.readValue(response.body(), new TypeReference<>() {
         });
     }
