@@ -1,6 +1,5 @@
 package ru.practicum.explore.with.me.stats;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import ru.practicum.explore.with.me.events.dto.EventFullDto;
 import ru.practicum.explore.with.me.events.dto.EventShortDto;
 
@@ -10,7 +9,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 public interface StatsService {
-    void statsHit(HttpServletRequest request) throws URISyntaxException, JsonProcessingException;
 
     List<EventShortDto> getViewStats(HttpServletRequest request, List<EventShortDto> eventShortDtoList) throws URISyntaxException, IOException, InterruptedException;
 

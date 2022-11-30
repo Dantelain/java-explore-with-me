@@ -16,6 +16,7 @@ import ru.practicum.explore.with.me.comments.repo.CommentsRepo;
 import ru.practicum.explore.with.me.events.model.Event;
 import ru.practicum.explore.with.me.events.repo.EventRepo;
 import ru.practicum.explore.with.me.exception.NotFoundException;
+import ru.practicum.explore.with.me.exception.ValidationException;
 import ru.practicum.explore.with.me.requests.model.Status;
 import ru.practicum.explore.with.me.requests.repo.RequestsRepo;
 import ru.practicum.explore.with.me.users.model.User;
@@ -40,26 +41,52 @@ public class CommentsServiceImpl implements CommentsService {
         int page = from / size;
         Page<Comment> commentList = commentsRepo.findAll((root, query, cb) ->
                         cb.and(
-                                (userId != null) ? cb.equal(root.get("author"), User.builder().id(userId).build()) : root.isNotNull(),
-                                (eventId != null) ? cb.equal(root.get("event"), Event.builder().id(eventId).build()) : root.isNotNull(),
-                                (state != null) ? cb.equal(root.get("state"), State.valueOf(state)) : root.get("state").in(State.APPROVED, State.CREATED)
+                                (userId != null) ? cb.equal(root.get("author").get("id"), userId) : root.isNotNull(),
+                                (eventId != null) ? cb.equal(root.get("event").get("id"), eventId) : root.isNotNull(),
+                                (state != null) ? cb.equal(root.get("state"), State.valueOf(state)) : cb.equal(root.get("state"), State.APPROVED)
                         ),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateCreate")));
         return commentList.stream().map(CommentsMapper::toCommentsDto).collect(Collectors.toList());
     }
 
     @Override
+    public List<CommentsDto> getAllOwner(Long userId, Long eventId, Integer from, Integer size) {
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ValidationException("Просматривать все комметарии к событию может только владелец события ", userId.toString());
+        }
+        int page = from / size;
+        Page<Comment> commentList = commentsRepo.findAll((root, query, cb) ->
+                cb.and(
+                        cb.equal(root.get("event").get("id"), eventId),
+                        root.get("state").in(State.APPROVED, State.HIDDEN)
+                ),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateCreate")));
+        return commentList.stream().map(CommentsMapper::toCommentsDto).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
-    public CommentsDto moderation(Long commentId, String state) {
+    public CommentsDto approve(Long commentId) {
         Comment comment = commentsRepo.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
-        comment.setState(State.valueOf(state));
+        comment.setState(State.APPROVED);
         return CommentsMapper.toCommentsDto(commentsRepo.save(comment));
     }
 
     @Override
     @Transactional
-    public void delete(Long commentId) {
+    public CommentsDto hidden(Long commentId) {
+        Comment comment = commentsRepo.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        comment.setState(State.HIDDEN);
+        return CommentsMapper.toCommentsDto(commentsRepo.save(comment));
+    }
+
+    @Override
+    @Transactional
+    public void deleteForAdmin(Long commentId) {
         commentsRepo.deleteById(commentId);
     }
 

@@ -116,8 +116,8 @@ public class EventServiceImpl implements EventService {
         Page<Event> events = eventRepo.findAll((root, query, criteriaBuilder) ->
                         criteriaBuilder.and(
                                 criteriaBuilder.equal(root.get("state"), State.PUBLISHED.ordinal()),
-                                root.get("categories").in(categories),
-                                criteriaBuilder.equal(root.get("paid"), paid),
+                                (categories != null) ? root.get("categories").in(categories) : root.isNotNull(),
+                                (paid != null) ? criteriaBuilder.equal(root.get("paid"), paid) : root.isNotNull(),
                                 (!rangeStart.isEmpty() && !rangeEnd.isEmpty()) ?
                                         criteriaBuilder.and(
                                                 criteriaBuilder.greaterThan(root.get("eventDate"), LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
@@ -129,10 +129,10 @@ public class EventServiceImpl implements EventService {
                                                 criteriaBuilder.notEqual(root.get("participantLimit"), 0),
                                                 criteriaBuilder.greaterThan(root.get("participantLimit"), root.get("confirmedRequests"))
                                         )) : root.isNotNull(),
-                                criteriaBuilder.or(
+                                (text != null) ? criteriaBuilder.or(
                                         criteriaBuilder.like(criteriaBuilder.lower(root.get("annotation")), "%" + text.toLowerCase() + "%"),
                                         criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + text.toLowerCase() + "%")
-                                )),
+                                ) : root.isNotNull()),
                 PageRequest.of(page, size, mySort));
         return events.stream()
                 .map(EventMapper::toEventShortDto)

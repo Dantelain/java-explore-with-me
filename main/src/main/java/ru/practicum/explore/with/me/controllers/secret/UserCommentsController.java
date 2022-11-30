@@ -2,6 +2,7 @@ package ru.practicum.explore.with.me.controllers.secret;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explore.with.me.comments.dto.CommentsCreateDto;
 import ru.practicum.explore.with.me.comments.dto.CommentsDto;
@@ -9,12 +10,15 @@ import ru.practicum.explore.with.me.comments.dto.CommentsEditDto;
 import ru.practicum.explore.with.me.comments.service.CommentsService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @Slf4j
 @AllArgsConstructor
 @RequestMapping(path = "/users/{userId}/comments")
+@Validated
 public class UserCommentsController {
 
     private CommentsService commentsService;
@@ -22,8 +26,8 @@ public class UserCommentsController {
     @GetMapping
     public List<CommentsDto> getAll(@PathVariable Long userId,
                                     @RequestParam(required = false, defaultValue = "0") Integer from,
-                                    @RequestParam(required = false, defaultValue = "10") Integer size,
-                                    @RequestParam(required = false, defaultValue = "ALL") String state) {
+                                    @RequestParam(required = false, defaultValue = "10") @PositiveOrZero Integer size,
+                                    @RequestParam(required = false, defaultValue = "ALL") @Positive String state) {
         log.info("запрос GET, userId - {}, from - {}, size - {}, state - {}", userId, from, size, state);
         return commentsService.getAll(userId, null, from, size, state);
     }
@@ -44,6 +48,14 @@ public class UserCommentsController {
     public void delete(@PathVariable Long userId, @PathVariable Long commentId) {
         log.info("запрос PUT, userId - {}, commentId - {}", userId, commentId);
         commentsService.delete(userId, commentId);
+    }
+
+    @GetMapping("/{eventId}")
+    public List<CommentsDto> getAllCommentEvent(@PathVariable Long userId,
+                                                @PathVariable Long eventId,
+                                                @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer from,
+                                                @RequestParam(required = false, defaultValue = "10") @Positive Integer size) {
+        return commentsService.getAllOwner(userId, eventId, from, size);
     }
 
 }

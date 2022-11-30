@@ -10,9 +10,13 @@ public interface CommentsService {
 
     List<CommentsDto> getAll(Long userId, Long eventId, Integer from, Integer size, String state);
 
-    CommentsDto moderation(Long commentId, String state);
+    List<CommentsDto> getAllOwner(Long userId, Long eventId, Integer from, Integer size);
 
-    void delete(Long commentId);
+    CommentsDto approve(Long commentId);
+
+    CommentsDto hidden(Long commentId);
+
+    void deleteForAdmin(Long commentId);
 
     CommentsDto edit(Long userId, CommentsEditDto commentsEditDto);
 
