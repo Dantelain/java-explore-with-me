@@ -25,9 +25,9 @@ public class EventsController {
 
     @GetMapping
     public List<EventShortDto> getAll(HttpServletRequest request,
-                                      @RequestParam String text,
-                                      @RequestParam List<Long> categories,
-                                      @RequestParam Boolean paid,
+                                      @RequestParam(required = false) String text,
+                                      @RequestParam(required = false) List<Long> categories,
+                                      @RequestParam(required = false) Boolean paid,
                                       @RequestParam(required = false, defaultValue = "") String rangeStart,
                                       @RequestParam(required = false, defaultValue = "") String rangeEnd,
                                       @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,

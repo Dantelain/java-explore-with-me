@@ -23,8 +23,9 @@ public class Event {
     private Long id;
     @Column(length = 2000)
     private String annotation; //Эксклюзивность нашего шоу гарантирует привлечение максимальной зрительской аудитории
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categories_id")
+    @ToString.Exclude
     private Categories categories;
     @Builder.Default
     private Long confirmedRequests = 0L; //Количество одобренных заявок на участие в данном событии
@@ -32,8 +33,9 @@ public class Event {
     @Column(length = 7000)
     private String description; //Полное описание события
     private LocalDateTime eventDate; //Дата и время на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @ToString.Exclude
     private User initiator;
     @Embedded
     private Location location;

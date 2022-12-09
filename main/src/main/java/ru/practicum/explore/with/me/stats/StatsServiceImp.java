@@ -1,6 +1,5 @@
 package ru.practicum.explore.with.me.stats;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +36,6 @@ public class StatsServiceImp implements StatsService {
     }
 
     @Override
-    public void statsHit(HttpServletRequest request) throws URISyntaxException, JsonProcessingException {
-        StatsHitDto statsHitDto = StatsHitDto.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURL().toString())
-                .timestamp(LocalDateTime.now())
-                .ip(request.getRemoteAddr())
-                .build();
-        sendStats(statsHitDto);
-    }
-
-    @Override
     public List<EventShortDto> getViewStats(HttpServletRequest request, List<EventShortDto> eventShortDtoList) throws URISyntaxException, IOException, InterruptedException {
         List<String> uris = eventShortDtoList.stream()
                 .map(el -> "/events/" + el.getId().toString())
@@ -60,6 +48,12 @@ public class StatsServiceImp implements StatsService {
             Long hits = statsViewDtoMap.getOrDefault(key, stats).getHits();
             el.setViews(hits);
         });
+        StringBuilder query = new StringBuilder();
+        query.append("/events");
+        if (request.getQueryString() != null) {
+            query.append(request.getQueryString());
+        }
+        uris.add(query.toString());
         statsHit(request, uris);
         return eventShortDtoList;
     }
@@ -74,7 +68,7 @@ public class StatsServiceImp implements StatsService {
         return eventFullDto;
     }
 
-    private void statsHit(HttpServletRequest request, List<String> uris) throws JsonProcessingException, URISyntaxException {
+    private void statsHit(HttpServletRequest request, List<String> uris) throws IOException, URISyntaxException, InterruptedException {
         List<StatsHitDto> statsHitDtoList = uris.stream()
                 .map(uri -> StatsHitDto.builder()
                         .app("ewm-main-service")
@@ -88,7 +82,7 @@ public class StatsServiceImp implements StatsService {
         }
     }
 
-    private void sendStats(StatsHitDto statsHitDto) throws JsonProcessingException, URISyntaxException {
+    private void sendStats(StatsHitDto statsHitDto) throws IOException, URISyntaxException, InterruptedException {
         String requestBody = objectMapper
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(statsHitDto);
@@ -98,15 +92,14 @@ public class StatsServiceImp implements StatsService {
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
-        HttpClient.newHttpClient()
-                .sendAsync(statRequest, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::statusCode);
+        HttpClient.newHttpClient().send(statRequest,HttpResponse.BodyHandlers.ofString());
+
     }
 
     private List<StatsViewDto> getStats(List<String> uris) throws URISyntaxException, IOException, InterruptedException {
         URI uri = new URIBuilder(serverUrl + "/stats")
                 .addParameter("start", LocalDateTime.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .addParameter("end", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .addParameter("end", LocalDateTime.now().plusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .addParameter("uris", listToString(uris))
                 .build();
 
@@ -116,7 +109,6 @@ public class StatsServiceImp implements StatsService {
                 .build();
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(statRequest, HttpResponse.BodyHandlers.ofString());
-        log.warn("response.body() - {}", response.body());
         return objectMapper.readValue(response.body(), new TypeReference<>() {
         });
     }
