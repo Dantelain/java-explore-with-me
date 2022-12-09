@@ -23,4 +23,6 @@ public interface CommentsService {
     void delete(Long userId, Long commentId);
 
     CommentsDto create(Long userId, CommentsCreateDto commentsCreateDto);
+
+    CommentsDto getOne(Long commentId);
 }

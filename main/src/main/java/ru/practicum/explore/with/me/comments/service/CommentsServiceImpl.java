@@ -43,7 +43,7 @@ public class CommentsServiceImpl implements CommentsService {
                         cb.and(
                                 (userId != null) ? cb.equal(root.get("author").get("id"), userId) : root.isNotNull(),
                                 (eventId != null) ? cb.equal(root.get("event").get("id"), eventId) : root.isNotNull(),
-                                (state != null) ? cb.equal(root.get("state"), State.valueOf(state)) : cb.equal(root.get("state"), State.APPROVED)
+                                (state != null) ? cb.equal(root.get("state"), State.valueOf(state)) : root.isNotNull()
                         ),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateCreate")));
         return commentList.stream().map(CommentsMapper::toCommentsDto).collect(Collectors.toList());
@@ -54,14 +54,14 @@ public class CommentsServiceImpl implements CommentsService {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new ValidationException("Просматривать все комметарии к событию может только владелец события ", userId.toString());
+            throw new ValidationException("Просматривать все комментарии к событию может только владелец события ", userId.toString());
         }
         int page = from / size;
         Page<Comment> commentList = commentsRepo.findAll((root, query, cb) ->
-                cb.and(
-                        cb.equal(root.get("event").get("id"), eventId),
-                        root.get("state").in(State.APPROVED, State.HIDDEN)
-                ),
+                        cb.and(
+                                cb.equal(root.get("event").get("id"), eventId),
+                                root.get("state").in(State.APPROVED, State.HIDDEN)
+                        ),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateCreate")));
         return commentList.stream().map(CommentsMapper::toCommentsDto).collect(Collectors.toList());
     }
@@ -91,17 +91,27 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
+    @Transactional
     public void delete(Long userId, Long commentId) {
-        commentsRepo.deleteByAuthorAndId(User.builder().id(userId).build(), commentId);
+        Comment comment = commentsRepo.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new ValidationException("Удалить комментарий может только владелец ", userId.toString());
+        }
+        commentsRepo.deleteByIdAndAuthor(commentId, User.builder().id(userId).build());
     }
 
     @Override
     @Transactional
     public CommentsDto create(Long userId, CommentsCreateDto commentsCreateDto) {
-        User author = userRepo.findById(commentsCreateDto.getAuthorId())
+        User author = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        Event event = eventRepo.findById(commentsCreateDto.getEventId())
-                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        Event event = eventRepo.findOne(((root, query, cb) ->
+                        cb.and(
+                                cb.equal(root.get("id"), commentsCreateDto.getEventId()),
+                                cb.equal(root.get("state"), ru.practicum.explore.with.me.events.model.State.PUBLISHED)
+                        )))
+                .orElseThrow(() -> new NotFoundException("Событие не найдено, либо должно быть опубликовано"));
         Comment comment = Comment.builder()
                 .author(author)
                 .event(event)
@@ -122,9 +132,20 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
+    public CommentsDto getOne(Long commentId) {
+        Comment comment = commentsRepo.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        return CommentsMapper.toCommentsDto(comment);
+
+    }
+
+    @Override
     public CommentsDto edit(Long userId, CommentsEditDto commentsEditDto) {
         Comment comment = commentsRepo.findById(commentsEditDto.getId())
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new ValidationException("Пользователь не является автором комментария", userId.toString());
+        }
         comment.setState(State.EDITED);
         comment.setEdited(true);
         comment.setText(commentsEditDto.getText());

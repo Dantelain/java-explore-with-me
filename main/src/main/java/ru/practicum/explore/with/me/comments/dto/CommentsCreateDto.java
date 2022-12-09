@@ -16,8 +16,6 @@ import javax.validation.constraints.Size;
 public class CommentsCreateDto {
 
     @NotNull
-    private Long authorId;
-    @NotNull
     private Long eventId;
     @NotBlank
     @Size(max = 2000)

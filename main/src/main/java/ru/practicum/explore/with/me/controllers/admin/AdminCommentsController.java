@@ -26,25 +26,32 @@ public class AdminCommentsController {
                                     @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer from,
                                     @RequestParam(required = false, defaultValue = "10") @Positive Integer size,
                                     @RequestParam(required = false) String state) {
-        log.info("запрос GET, userId - {}, eventId - {}, from - {}, size - {}, state - {}", userId, eventId, from, size, state);
+        log.warn("запрос GET, userId - {}, eventId - {}, from - {}, size - {}, state - {}", userId, eventId, from, size, state);
         return commentsService.getAll(userId, eventId, from, size, state);
     }
 
     @PatchMapping("/{commentId}/approve")
     public CommentsDto approve(@PathVariable Long commentId) {
-        log.info("запрос PATH approve, commentId - {}", commentId);
+        log.warn("запрос PATH approve, commentId - {}", commentId);
         return commentsService.approve(commentId);
     }
 
     @PatchMapping("/{commentId}/hidden")
     public CommentsDto hidden(@PathVariable Long commentId) {
-        log.info("запрос PATH hidden, commentId - {}", commentId);
+        log.warn("запрос PATH hidden, commentId - {}", commentId);
         return commentsService.hidden(commentId);
     }
 
     @DeleteMapping("/{commentId}")
     public void deleteAdmin(@PathVariable Long commentId) {
-        log.info("запрос DELETE, commentId - {}", commentId);
+        log.warn("запрос DELETE, commentId - {}", commentId);
         commentsService.deleteForAdmin(commentId);
     }
+
+    @GetMapping("/{commentId}")
+    public CommentsDto getOne(@PathVariable Long commentId) {
+        log.warn("запрос GET, commentId - {}", commentId);
+        return commentsService.getOne(commentId);
+    }
+
 }

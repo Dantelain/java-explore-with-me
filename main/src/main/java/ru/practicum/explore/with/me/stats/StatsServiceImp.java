@@ -99,7 +99,7 @@ public class StatsServiceImp implements StatsService {
     private List<StatsViewDto> getStats(List<String> uris) throws URISyntaxException, IOException, InterruptedException {
         URI uri = new URIBuilder(serverUrl + "/stats")
                 .addParameter("start", LocalDateTime.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .addParameter("end", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .addParameter("end", LocalDateTime.now().plusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .addParameter("uris", listToString(uris))
                 .build();
 

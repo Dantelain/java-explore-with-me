@@ -22,7 +22,6 @@ services:
       POSTGRES_DB: "stats"
       POSTGRES_USER: "root"
       POSTGRES_PASSWORD: "root"
-      POSTGRES_PORT: 5433
     networks:
       - stats-server
 

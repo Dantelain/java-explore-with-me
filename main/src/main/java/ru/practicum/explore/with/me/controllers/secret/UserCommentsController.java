@@ -28,25 +28,25 @@ public class UserCommentsController {
                                     @RequestParam(required = false, defaultValue = "0") Integer from,
                                     @RequestParam(required = false, defaultValue = "10") @PositiveOrZero Integer size,
                                     @RequestParam(required = false, defaultValue = "ALL") @Positive String state) {
-        log.info("запрос GET, userId - {}, from - {}, size - {}, state - {}", userId, from, size, state);
+        log.warn("запрос GET, userId - {}, from - {}, size - {}, state - {}", userId, from, size, state);
         return commentsService.getAll(userId, null, from, size, state);
     }
 
     @PostMapping
     public CommentsDto create(@PathVariable Long userId, @Valid @RequestBody CommentsCreateDto commentsCreateDto) {
-        log.info("запрос POST, userId - {}, commentsCreateDto - {}", userId, commentsCreateDto);
+        log.warn("запрос POST, userId - {}, commentsCreateDto - {}", userId, commentsCreateDto);
         return commentsService.create(userId, commentsCreateDto);
     }
 
-    @PutMapping
+    @PatchMapping
     public CommentsDto edit(@PathVariable Long userId, @Valid @RequestBody CommentsEditDto commentsEditDto) {
-        log.info("запрос PUT, userId - {}, commentsEditDto - {}", userId, commentsEditDto);
+        log.warn("запрос PUT, userId - {}, commentsEditDto - {}", userId, commentsEditDto);
         return commentsService.edit(userId, commentsEditDto);
     }
 
     @DeleteMapping("/{commentId}")
     public void delete(@PathVariable Long userId, @PathVariable Long commentId) {
-        log.info("запрос PUT, userId - {}, commentId - {}", userId, commentId);
+        log.warn("запрос PUT, userId - {}, commentId - {}", userId, commentId);
         commentsService.delete(userId, commentId);
     }
 
@@ -55,6 +55,7 @@ public class UserCommentsController {
                                                 @PathVariable Long eventId,
                                                 @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer from,
                                                 @RequestParam(required = false, defaultValue = "10") @Positive Integer size) {
+        log.warn("запрос GET, userId - {}, eventId - {}, from - {}, size - {}", userId, eventId, from, size);
         return commentsService.getAllOwner(userId, eventId, from, size);
     }
 

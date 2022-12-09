@@ -24,8 +24,8 @@ public class CommentsController {
     public List<CommentsDto> getAll(@PathVariable Long eventId,
                                     @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer from,
                                     @RequestParam(required = false, defaultValue = "10") @Positive Integer size) {
-        log.info("запрос GET, eventId - {}, from - {}, size - {}", eventId, from, size);
-        return commentsService.getAll(null, eventId, from, size, null);
+        log.warn("запрос GET, eventId - {}, from - {}, size - {}", eventId, from, size);
+        return commentsService.getAll(null, eventId, from, size, "APPROVED");
     }
 
 }

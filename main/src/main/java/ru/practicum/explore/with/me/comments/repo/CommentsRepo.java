@@ -7,5 +7,5 @@ import ru.practicum.explore.with.me.users.model.User;
 
 public interface CommentsRepo extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
 
-    void deleteByAuthorAndId(User author, Long id);
+    void deleteByIdAndAuthor(Long id, User author);
 }
